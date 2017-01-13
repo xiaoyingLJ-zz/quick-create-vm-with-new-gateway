@@ -258,7 +258,7 @@
       "dependsOn": [
         "[resourceId('Microsoft.Compute/virtualMachines/',parameters('Name'))]",
         "[resourceId('Microsoft.Network/publicIPAddresses/', variables('publicIPAddressName'))]",
-        "[resourceId('Microsoft.DataFactory/dataFactories/gateways', concat(parameters('existingDataFactoryName'), '/', parameters('newGatewayName')))]"
+        "[resourceId('Microsoft.DataFactory/dataFactories/gateways', parameters('existingDataFactoryName'), parameters('newGatewayName'))]"
       ],
       "properties": {
         "publisher": "Microsoft.Compute",
@@ -269,7 +269,7 @@
           "fileUris": [ "[variables('scriptURL')]"]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File gatewayInstall.ps1 ', reference(resourceId('Microsoft.DataFactory/dataFactories/gateways', concat(parameters('existingDataFactoryName'), '/', parameters('newGatewayName')))).key, ' ', reference(variables('publicIPAddressName')).dnsSettings.fqdn)]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File gatewayInstall.ps1 ', reference(resourceId('Microsoft.DataFactory/dataFactories/gateways', parameters('existingDataFactoryName'), parameters('newGatewayName'))).key, ' ', reference(variables('publicIPAddressName')).dnsSettings.fqdn)]"
         }
       }
     }
