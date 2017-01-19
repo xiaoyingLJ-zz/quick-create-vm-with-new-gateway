@@ -15,6 +15,7 @@
 - Name of the Resource Group that the VNET resides in.
 - Region of the VNET(VM will be created in the same region with VNET)
 
+```
 NOTE
 
 This template will create an additional storage account for vm system image and boot diagnostic.To avoid to running into storage account limits, it's best to delete the storage account when the VM is deleted
