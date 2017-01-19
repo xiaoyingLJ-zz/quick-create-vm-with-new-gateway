@@ -5,7 +5,7 @@
     "Name": {
       "type": "string"
     },
-    "virtualMachineLocation":{
+    "existingVnetLocation":{
       "type": "string"
     }
   },
@@ -17,7 +17,7 @@
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('publicIPAddressName')]",
-      "location": "[parameters('virtualMachineLocation')]",
+      "location": "[parameters('existingVnetLocation')]",
       "tags": {
             "vmname": "[parameters('Name')]"
       },
@@ -29,7 +29,7 @@
       "name": "[variables('networkSecurityGroupName')]",
       "type": "Microsoft.Network/networkSecurityGroups",
       "apiVersion": "2016-09-01",
-      "location": "[parameters('virtualMachineLocation')]",
+      "location": "[parameters('existingVnetLocation')]",
       "tags": {
             "vmname": "[parameters('Name')]"
       },

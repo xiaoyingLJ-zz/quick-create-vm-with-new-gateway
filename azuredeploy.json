@@ -30,7 +30,13 @@
           "description": "The size of virtual machine. Pricing link: https://azure.microsoft.com/en-us/pricing/details/virtual-machines/windows/ "
         }
     },
-    "virtualMachineLocation":
+    "userName": {
+      "type": "string"
+    },
+    "Password": {
+      "type": "securestring"
+    },
+    "existingVnetLocation":
     {
       "type": "string",
       "allowedValues": [
@@ -60,12 +66,6 @@
         "UK South",
         "UK West"
       ]
-    },
-    "userName": {
-      "type": "string"
-    },
-    "Password": {
-      "type": "securestring"
     },
     "existingVirtualNetworkNameResourceGroup":{
       "type": "string",
@@ -102,7 +102,6 @@
     "storageAccountName": "[take(concat(toLower(variables('prefix')), uniquestring(resourceGroup().id)), 24)]",
     "nicName": "[concat(parameters('virtualMachineName'), 'Nic')]",
     "publicIPAddressName": "[concat(parameters('virtualMachineName'), '-ip')]",
-    "subnetRef": "[resourceId(parameters('existingVirtualNetworkNameResourceGroup'), 'Microsoft.Network/virtualNetworks/subnets', parameters('existingVirtualNetworkName'), parameters('existingSubnetName'))]",
     "networkSecurityGroupName": "[concat(parameters('virtualMachineName'), 'nsg')]",
     "scriptURL": "[concat(variables('baseUri'), 'scripts/gatewayInstall.ps1')]"
   },
@@ -119,7 +118,7 @@
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('storageAccountName')]",
       "apiVersion": "2016-01-01",
-      "location": "[parameters('virtualMachineLocation')]",
+      "location": "[parameters('existingVnetLocation')]",
       "dependsOn": [
         "[resourceId('Microsoft.DataFactory/dataFactories/gateways', parameters('existingDataFactoryName'), parameters('newGatewayName'))]"
       ],
@@ -136,7 +135,7 @@
       "apiVersion": "2016-03-30",
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicName')]",
-      "location": "[parameters('virtualMachineLocation')]",
+      "location": "[parameters('existingVnetLocation')]",
       "tags": {
             "vmname": "[parameters('virtualMachineName')]"
       },
@@ -153,7 +152,7 @@
                 "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('publicIPAddressName'))]"
               },
               "subnet": {
-                "id": "[variables('subnetRef')]"
+                "id": "[resourceId(parameters('existingVirtualNetworkNameResourceGroup'), 'Microsoft.Network/virtualNetworks/subnets', parameters('existingVirtualNetworkName'), parameters('existingSubnetName'))]"
               }
             }
           }
@@ -167,7 +166,7 @@
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
       "name": "[parameters('virtualMachineName')]",
-      "location": "[parameters('virtualMachineLocation')]",
+      "location": "[parameters('existingVnetLocation')]",
       "tags": {
             "vmname": "[parameters('virtualMachineName')]"
       },
@@ -242,8 +241,8 @@
           "Name": {
             "value": "[parameters('virtualMachineName')]"
           },
-          "virtualMachineLocation":{
-            "value": "[parameters('virtualMachineLocation')]"
+          "existingVnetLocation":{
+            "value": "[parameters('existingVnetLocation')]"
           }
         }
       }
@@ -252,7 +251,7 @@
       "type": "Microsoft.Compute/virtualMachines/extensions",
       "name": "[concat(parameters('virtualMachineName'),'/', parameters('virtualMachineName'),'installGW')]",
       "apiVersion": "2015-06-15",
-      "location": "[parameters('virtualMachineLocation')]",
+      "location": "[parameters('existingVnetLocation')]",
       "tags": {
             "vmname": "[parameters('virtualMachineName')]"
       },
