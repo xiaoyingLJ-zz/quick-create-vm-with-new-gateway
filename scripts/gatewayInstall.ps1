@@ -2,7 +2,9 @@
  [string]
  $gatewayKey,
  [string]
- $vmdnsname
+ $vmdnsname,
+ [string]
+ $openPort
 )
 
 # init log setting
@@ -196,8 +198,6 @@ function Register-Gateway([string] $instanceKey)
     Trace-Log "Register Agent"
 	$filePath = Get-InstalledFilePath
 	Run-Process $filePath "-k $instanceKey"
-
-	Restart-Service DIAHostService -WarningAction:SilentlyContinue
     Trace-Log "Agent registration is successful!"
 }
 
@@ -207,7 +207,6 @@ function Set-ExternalHostName([string] $keyValue)
     Trace-Log "set externalhostname for gateway"
     Set-ItemProperty -Path $regkey -Name ExternalHostName -Value $keyValue
     Trace-Log "Successfully add VM DNS name $keyValue in Registry"
-
 }
 
 
@@ -220,6 +219,10 @@ Trace-Log "Gateway download location: $gwPath"
 
 $hashValue = Download-Gateway $uri $gwPath
 Install-Gateway $gwPath $hashValue
-Set-ExternalHostName $vmdnsname
+if($openPort -eq 'yes')
+{
+	Set-ExternalHostName $vmdnsname
+}
+
 Register-Gateway $gatewayKey
 
