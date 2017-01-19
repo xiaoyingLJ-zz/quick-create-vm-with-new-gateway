@@ -8,7 +8,7 @@
     "newGatewayName": {
       "type": "string"
     },
-    "Name": {
+    "virtualMachineName": {
       "type": "string",
       "maxLength": 15,
       "minLength": 3,
@@ -97,13 +97,13 @@
   "variables": {
     "baseUri": "https://raw.githubusercontent.com/xiaoyingLJ/quick-create-vm-with-new-gateway/master/",
     "nsglink": "[concat(variables('baseUri'), 'nested/', parameters('enableToSetDataStorePasswordsFromInternet'),'IncomingRemote.json')]",
-    "nsgTemplateName": "[concat(parameters('Name'), 'NSGTemplate')]",
-    "prefix": "[split(parameters('Name'), '-')[0]]",
+    "nsgTemplateName": "[concat(parameters('virtualMachineName'), 'NSGTemplate')]",
+    "prefix": "[split(parameters('virtualMachineName'), '-')[0]]",
     "storageAccountName": "[take(concat(toLower(variables('prefix')), uniquestring(resourceGroup().id)), 24)]",
-    "nicName": "[concat(parameters('Name'), 'Nic')]",
-    "publicIPAddressName": "[concat(parameters('Name'), '-ip')]",
+    "nicName": "[concat(parameters('virtualMachineName'), 'Nic')]",
+    "publicIPAddressName": "[concat(parameters('virtualMachineName'), '-ip')]",
     "subnetRef": "[resourceId(parameters('existingVirtualNetworkNameResourceGroup'), 'Microsoft.Network/virtualNetworks/subnets', parameters('existingVirtualNetworkName'), parameters('existingSubnetName'))]",
-    "networkSecurityGroupName": "[concat(parameters('Name'), 'nsg')]",
+    "networkSecurityGroupName": "[concat(parameters('virtualMachineName'), 'nsg')]",
     "scriptURL": "[concat(variables('baseUri'), 'scripts/gatewayInstall.ps1')]"
   },
   "resources": [
@@ -124,7 +124,7 @@
         "[resourceId('Microsoft.DataFactory/dataFactories/gateways', parameters('existingDataFactoryName'), parameters('newGatewayName'))]"
       ],
       "tags": {
-            "vmname": "[parameters('Name')]"
+            "vmname": "[parameters('virtualMachineName')]"
       },
       "sku": {
         "name": "Standard_LRS"
@@ -138,7 +138,7 @@
       "name": "[variables('nicName')]",
       "location": "[parameters('virtualMachineLocation')]",
       "tags": {
-            "vmname": "[parameters('Name')]"
+            "vmname": "[parameters('virtualMachineName')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments/', variables('nsgTemplateName'))]"
@@ -166,10 +166,10 @@
     {
       "apiVersion": "2015-06-15",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[parameters('Name')]",
+      "name": "[parameters('virtualMachineName')]",
       "location": "[parameters('virtualMachineLocation')]",
       "tags": {
-            "vmname": "[parameters('Name')]"
+            "vmname": "[parameters('virtualMachineName')]"
       },
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
@@ -180,7 +180,7 @@
           "vmSize": "[parameters('Size')]"
         },
         "osProfile": {
-          "computerName": "[parameters('Name')]",
+          "computerName": "[parameters('virtualMachineName')]",
           "adminUsername": "[parameters('userName')]",
           "adminPassword": "[parameters('Password')]"
         },
@@ -240,7 +240,7 @@
         },
         "parameters": {
           "Name": {
-            "value": "[parameters('Name')]"
+            "value": "[parameters('virtualMachineName')]"
           },
           "virtualMachineLocation":{
             "value": "[parameters('virtualMachineLocation')]"
@@ -250,14 +250,14 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(parameters('Name'),'/', parameters('Name'),'installGW')]",
+      "name": "[concat(parameters('virtualMachineName'),'/', parameters('virtualMachineName'),'installGW')]",
       "apiVersion": "2015-06-15",
       "location": "[parameters('virtualMachineLocation')]",
       "tags": {
-            "vmname": "[parameters('Name')]"
+            "vmname": "[parameters('virtualMachineName')]"
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachines/',parameters('Name'))]"
+        "[resourceId('Microsoft.Compute/virtualMachines/',parameters('virtualMachineName'))]"
       ],
       "properties": {
         "publisher": "Microsoft.Compute",
@@ -268,15 +268,9 @@
           "fileUris": [ "[variables('scriptURL')]"]
         },
         "protectedSettings": {
-          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File gatewayInstall.ps1 ', reference(resourceId('Microsoft.DataFactory/dataFactories/gateways', parameters('existingDataFactoryName'), parameters('newGatewayName'))).key, ' ', reference(variables('publicIPAddressName')).dnsSettings.fqdn, ' ', parameters('enableToSetDataStorePasswordsFromInternet'))]"
+          "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File gatewayInstall.ps1 ', reference(resourceId('Microsoft.DataFactory/dataFactories/gateways', parameters('existingDataFactoryName'), parameters('newGatewayName'))).key, ' ', reference(variables('nsgTemplateName')).outputs.hostname.Value, ' ', parameters('enableToSetDataStorePasswordsFromInternet'))]"
         }
       }
     }
-  ],
-  "outputs": {
-    "hostname": {
-      "type": "string",
-      "value": "[reference(variables('publicIPAddressName')).dnsSettings.fqdn]"
-    }
-  }
+  ]
 }
