@@ -51,5 +51,11 @@
         ]
       }
     }
-  ]
+  ],
+  "outputs": {
+    "hostname": {
+      "type": "string",
+      "value": ""
+    }
+  }
 }
